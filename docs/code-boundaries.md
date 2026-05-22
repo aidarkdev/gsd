@@ -70,7 +70,7 @@ Support utilities live outside the HTTP path unless called by controllers or mid
 
 - `src/Validation/Validator.php` provides small local validation rules.
 - `src/Log/FileLogger.php` writes application logs.
-- `scripts/*` contains setup, deploy, user-check, and test scripts.
+- `scripts/*` contains setup, deploy, and test scripts.
 - `database/schema.sql` owns the current database schema.
 
 ## Frontend Layers

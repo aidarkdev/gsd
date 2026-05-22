@@ -1,0 +1,14 @@
+{
+    "name": "gsd/app",
+    "description": "Minimal PHP REST API with Slim.",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {
+        "slim/slim": "^4.15",
+        "slim/psr7": "^1.8"
+    }
+}

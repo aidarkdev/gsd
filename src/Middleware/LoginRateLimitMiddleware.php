@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\I18n\Translator;
 use App\Repository\LoginAttemptRepository;
 use DateTimeImmutable;
 use Psr\Http\Message\ResponseInterface;
@@ -17,7 +18,8 @@ final class LoginRateLimitMiddleware
         private LoginAttemptRepository $attempts,
         private int $maxAttempts,
         private int $windowSeconds,
-        private int $lockSeconds
+        private int $lockSeconds,
+        private Translator $translator
     ) {
     }
 
@@ -75,7 +77,13 @@ final class LoginRateLimitMiddleware
     private function lockedResponse(): ResponseInterface
     {
         $response = new Response(429);
-        $response->getBody()->write('<!doctype html><html lang="en"><body><h1>Too many login attempts</h1></body></html>');
+        $lang = $this->translator->currentLanguage();
+        $message = $this->translator->translate($lang, 'error.too_many_login_attempts');
+        $response->getBody()->write(
+            '<!doctype html><html lang="' . htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') . '"><body><h1>'
+            . htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
+            . '</h1></body></html>'
+        );
 
         return $response
             ->withHeader('Content-Type', 'text/html; charset=utf-8')

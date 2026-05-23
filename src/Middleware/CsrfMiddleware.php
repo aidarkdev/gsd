@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use App\Auth\CsrfToken;
+use App\I18n\Translator;
 use App\Log\FileLogger;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,7 +18,8 @@ final class CsrfMiddleware
 
     public function __construct(
         private CsrfToken $csrf,
-        private FileLogger $logger
+        private FileLogger $logger,
+        private Translator $translator
     ) {
     }
 
@@ -48,7 +50,13 @@ final class CsrfMiddleware
             return $response->withHeader('Content-Type', 'application/json');
         }
 
-        $response->getBody()->write('<!doctype html><html lang="en"><body><h1>Invalid form token</h1></body></html>');
+        $lang = $this->translator->currentLanguage();
+        $message = $this->translator->translate($lang, 'error.invalid_csrf');
+        $response->getBody()->write(
+            '<!doctype html><html lang="' . htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') . '"><body><h1>'
+            . htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
+            . '</h1></body></html>'
+        );
 
         return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
     }

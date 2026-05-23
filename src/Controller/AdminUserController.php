@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Auth\AuthService;
 use App\Auth\CsrfToken;
+use App\I18n\Translator;
 use App\Repository\UserRepository;
 use App\View\TemplateRenderer;
 use Psr\Http\Message\ResponseInterface;
@@ -17,16 +18,22 @@ final class AdminUserController
         private TemplateRenderer $templates,
         private UserRepository $users,
         private AuthService $auth,
-        private CsrfToken $csrf
+        private CsrfToken $csrf,
+        private Translator $translator
     ) {
     }
 
     public function index(ServerRequestInterface $_request, ResponseInterface $response): ResponseInterface
     {
+        $lang = $this->translator->currentLanguage();
         $response->getBody()->write($this->templates->render('admin/users.php', [
             'user' => $this->auth->user(),
             'users' => $this->users->findAll(),
             'csrfToken' => $this->csrf->get(),
+            'lang' => $lang,
+            'languageAction' => '/lang/' . $this->translator->oppositeLanguage($lang),
+            'languageLabel' => $this->translator->translate($lang, 'language.switch_to'),
+            't' => fn (string $key): string => $this->translator->translate($lang, $key),
         ]));
 
         return $response->withHeader('Content-Type', 'text/html; charset=utf-8');

@@ -55,12 +55,14 @@ Production should set:
 ```env
 APP_DEBUG=false
 APP_COOKIE_SECURE=true
+APP_DEFAULT_LANG=en
 ```
 
 Local HTTP development may use:
 
 ```env
 APP_COOKIE_SECURE=false
+APP_DEFAULT_LANG=en
 ```
 
 Required database/admin values include:

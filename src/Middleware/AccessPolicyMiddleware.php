@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use App\Auth\AuthService;
+use App\I18n\Translator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -16,11 +17,15 @@ final class AccessPolicyMiddleware
         'GET /' => true,
         'GET /login' => true,
         'POST /login' => true,
+        'POST /lang/en' => true,
+        'POST /lang/ru' => true,
         'GET /api/health' => true,
     ];
 
-    public function __construct(private AuthService $auth)
-    {
+    public function __construct(
+        private AuthService $auth,
+        private Translator $translator
+    ) {
     }
 
     public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -74,7 +79,13 @@ final class AccessPolicyMiddleware
             return $response->withHeader('Content-Type', 'application/json');
         }
 
-        $response->getBody()->write('<!doctype html><html lang="en"><body><h1>403</h1></body></html>');
+        $lang = $this->translator->currentLanguage();
+        $message = $this->translator->translate($lang, 'error.forbidden');
+        $response->getBody()->write(
+            '<!doctype html><html lang="' . htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') . '"><body><h1>'
+            . htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
+            . '</h1></body></html>'
+        );
 
         return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
     }

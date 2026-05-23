@@ -8,6 +8,7 @@ use App\Auth\AuthService;
 use App\Auth\CsrfToken;
 use App\Database;
 use App\Http\ErrorHandler;
+use App\I18n\Translator;
 use App\Log\FileLogger;
 use App\Repository\LoginAttemptRepository;
 use App\Repository\UserRepository;
@@ -24,6 +25,7 @@ final class AppServices
         public readonly UserRepository $users,
         public readonly LoginAttemptRepository $loginAttempts,
         public readonly AuthService $auth,
+        public readonly Translator $translator,
         public readonly Validator $validator,
         public readonly ErrorHandler $errorHandler,
         public readonly bool $debug,

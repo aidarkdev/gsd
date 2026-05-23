@@ -8,6 +8,7 @@ use App\Auth\AuthService;
 use App\Auth\CsrfToken;
 use App\Database;
 use App\Http\ErrorHandler;
+use App\I18n\Translator;
 use App\Log\FileLogger;
 use App\Repository\LoginAttemptRepository;
 use App\Repository\UserRepository;
@@ -68,6 +69,7 @@ final class Bootstrap
         $users = new UserRepository($database);
         $loginAttempts = new LoginAttemptRepository($database);
         $auth = new AuthService($users);
+        $translator = new Translator($_ENV['APP_DEFAULT_LANG'] ?? 'en');
         $debug = self::boolEnv('APP_DEBUG', false);
 
         return new AppServices(
@@ -78,8 +80,9 @@ final class Bootstrap
             users: $users,
             loginAttempts: $loginAttempts,
             auth: $auth,
+            translator: $translator,
             validator: new Validator(),
-            errorHandler: new ErrorHandler($logger, $debug),
+            errorHandler: new ErrorHandler($logger, $debug, $translator),
             debug: $debug,
             sessionPath: $_ENV['APP_SESSION_PATH'] ?? $basePath . '/storage/sessions',
             cookieSecure: self::boolEnv('APP_COOKIE_SECURE', false),

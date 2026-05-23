@@ -15,17 +15,17 @@ final class Validator
 
             foreach ($fieldRules as $rule) {
                 if ($rule === 'required' && trim((string) $value) === '') {
-                    $errors[$field] = 'Required';
+                    $errors[$field] = 'validation.required';
                     break;
                 }
 
                 if ($rule === 'email' && $value !== null && !filter_var((string) $value, FILTER_VALIDATE_EMAIL)) {
-                    $errors[$field] = 'Invalid email';
+                    $errors[$field] = 'validation.email';
                     break;
                 }
 
                 if (str_starts_with($rule, 'min:') && strlen((string) $value) < (int) substr($rule, 4)) {
-                    $errors[$field] = 'Too short';
+                    $errors[$field] = 'validation.too_short';
                     break;
                 }
             }

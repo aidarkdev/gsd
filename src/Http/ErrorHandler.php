@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http;
 
 use App\Log\FileLogger;
+use App\I18n\Translator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpException;
@@ -15,7 +16,8 @@ final class ErrorHandler
 {
     public function __construct(
         private FileLogger $logger,
-        private bool $debug
+        private bool $debug,
+        private Translator $translator
     ) {
     }
 
@@ -50,8 +52,12 @@ final class ErrorHandler
             return $response->withHeader('Content-Type', 'application/json');
         }
 
-        $message = $status === 404 ? '404' : 'Server error';
-        $body = '<!doctype html><html lang="en"><body><h1>' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</h1></body></html>';
+        $lang = $this->translator->currentLanguage();
+        $key = $status === 404 ? 'error.not_found' : 'error.server';
+        $message = $this->translator->translate($lang, $key);
+        $body = '<!doctype html><html lang="' . htmlspecialchars($lang, ENT_QUOTES, 'UTF-8') . '"><body><h1>'
+            . htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
+            . '</h1></body></html>';
         $response->getBody()->write($body);
 
         return $response->withHeader('Content-Type', 'text/html; charset=utf-8');

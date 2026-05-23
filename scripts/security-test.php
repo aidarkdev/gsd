@@ -23,14 +23,14 @@ $services = Bootstrap::services(BASE_PATH);
 $requestFactory = new ServerRequestFactory();
 
 $_SESSION = [];
-$csrfResponse = (new CsrfMiddleware($services->csrf, $services->logger))(
+$csrfResponse = (new CsrfMiddleware($services->csrf, $services->logger, $services->translator))(
     $requestFactory->createServerRequest('POST', '/login')->withParsedBody([]),
     handler(200)
 );
 assertStatus($csrfResponse, 419, 'POST /login without CSRF returns 419');
 
 $_SESSION = [];
-$apiCsrfResponse = (new CsrfMiddleware($services->csrf, $services->logger))(
+$apiCsrfResponse = (new CsrfMiddleware($services->csrf, $services->logger, $services->translator))(
     $requestFactory->createServerRequest('POST', '/api/missing')->withParsedBody([]),
     handler(200)
 );
@@ -38,7 +38,7 @@ assertStatus($apiCsrfResponse, 419, 'POST /api/missing without CSRF returns 419'
 assertHeader($apiCsrfResponse, 'Content-Type', 'application/json', 'API CSRF response is JSON');
 
 $_SESSION = [];
-$dashboardResponse = (new AccessPolicyMiddleware($services->auth))(
+$dashboardResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
     $requestFactory->createServerRequest('GET', '/dashboard'),
     handler(200)
 );
@@ -63,14 +63,14 @@ try {
     $user = $services->users->findByEmail($email);
     $_SESSION = ['user_id' => (int) $user['id']];
 
-    $adminResponse = (new AccessPolicyMiddleware($services->auth))(
+    $adminResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
         $requestFactory->createServerRequest('GET', '/admin/users'),
         handler(200)
     );
     assertStatus($adminResponse, 403, 'Admin page with user role returns 403');
 
     $_SESSION = [];
-    $rateLimit = new LoginRateLimitMiddleware($services->loginAttempts, 5, 900, 900);
+    $rateLimit = new LoginRateLimitMiddleware($services->loginAttempts, 5, 900, 900, $services->translator);
     $loginRequest = $requestFactory
         ->createServerRequest('POST', '/login', ['REMOTE_ADDR' => '127.0.0.1'])
         ->withParsedBody(['email' => 'locked@example.com']);

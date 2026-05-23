@@ -12,14 +12,15 @@ use Slim\App;
 
 return static function (App $app, AppServices $services): void {
     $app->addRoutingMiddleware();
-    $app->add(new AccessPolicyMiddleware($services->auth));
+    $app->add(new AccessPolicyMiddleware($services->auth, $services->translator));
     $app->add(new LoginRateLimitMiddleware(
         $services->loginAttempts,
         $services->loginMaxAttempts,
         $services->loginWindowSeconds,
-        $services->loginLockSeconds
+        $services->loginLockSeconds,
+        $services->translator
     ));
-    $app->add(new CsrfMiddleware($services->csrf, $services->logger));
+    $app->add(new CsrfMiddleware($services->csrf, $services->logger, $services->translator));
     $app->addBodyParsingMiddleware();
     $app->add(new SessionMiddleware($services->sessionPath, $services->cookieSecure));
 

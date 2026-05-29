@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\App\AppServices;
 use App\Controller\AdminUserController;
+use App\Controller\AttachmentController;
 use App\Controller\AuthController;
+use App\Controller\CalendarController;
 use App\Controller\DashboardController;
 use App\Controller\HealthController;
 use App\Controller\HomeController;
@@ -27,6 +29,16 @@ return static function (App $app, AppServices $services): void {
         $services->csrf,
         $services->translator
     );
+    $calendarController = new CalendarController(
+        $services->templates,
+        $services->auth,
+        $services->csrf,
+        $services->translator,
+        $services->tasks,
+        $services->notes,
+        $services->attachments
+    );
+    $attachmentController = new AttachmentController($services->attachments, $services->auth);
     $healthController = new HealthController($services->database);
     $adminUserController = new AdminUserController(
         $services->templates,
@@ -41,6 +53,8 @@ return static function (App $app, AppServices $services): void {
     $app->post('/lang/{code}', [$authController, 'language']);
     $app->post('/logout', [$authController, 'logout']);
     $app->get('/dashboard', [$dashboardController, 'show']);
+    $app->get('/calendar', [$calendarController, 'show']);
+    $app->get('/attachments/{id}', [$attachmentController, 'show']);
     $app->get('/admin/users', [$adminUserController, 'index']);
 
     $app->get('/api/health', [$healthController, 'show']);

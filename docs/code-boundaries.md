@@ -154,5 +154,5 @@ For schema or runtime changes:
 
 - Update `database/schema.sql` for schema changes.
 - Document one-time production data steps in `docs/deploy.md`.
-- Keep `.env`, `storage/logs`, `storage/sessions`, and PostgreSQL data persistent across deploys.
+- Keep `.env`, `storage/attachments`, `storage/logs`, `storage/sessions`, and PostgreSQL data persistent across deploys.
 - Document new system packages, Composer dependencies, environment variables, storage directories, or nginx changes.

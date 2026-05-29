@@ -10,7 +10,11 @@ use App\Database;
 use App\Http\ErrorHandler;
 use App\I18n\Translator;
 use App\Log\FileLogger;
+use App\Repository\AttachmentRepository;
 use App\Repository\LoginAttemptRepository;
+use App\Repository\NoteRepository;
+use App\Repository\TagRepository;
+use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Validation\Validator;
 use App\View\TemplateRenderer;
@@ -68,6 +72,10 @@ final class Bootstrap
         $logger = new FileLogger($_ENV['APP_LOG'] ?? $basePath . '/storage/logs/app.log');
         $users = new UserRepository($database);
         $loginAttempts = new LoginAttemptRepository($database);
+        $tasks = new TaskRepository($database);
+        $notes = new NoteRepository($database);
+        $tags = new TagRepository($database);
+        $attachments = new AttachmentRepository($database);
         $auth = new AuthService($users);
         $translator = new Translator($_ENV['APP_DEFAULT_LANG'] ?? 'en');
         $debug = self::boolEnv('APP_DEBUG', false);
@@ -79,6 +87,10 @@ final class Bootstrap
             csrf: new CsrfToken(),
             users: $users,
             loginAttempts: $loginAttempts,
+            tasks: $tasks,
+            notes: $notes,
+            tags: $tags,
+            attachments: $attachments,
             auth: $auth,
             translator: $translator,
             validator: new Validator(),

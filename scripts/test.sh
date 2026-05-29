@@ -17,5 +17,6 @@ env REQUEST_METHOD=GET REQUEST_URI=/api/missing SCRIPT_NAME=/index.php SERVER_NA
     php "$ROOT_DIR/public/index.php" >/dev/null
 
 php "$ROOT_DIR/scripts/security-test.php"
+php "$ROOT_DIR/scripts/domain-test.php"
 
 echo "Tests passed"

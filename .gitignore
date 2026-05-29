@@ -3,6 +3,7 @@
 vendor/
 composer.phar
 composer-setup.php
+storage/attachments/
 storage/sessions/sess_*
 .agents/
 .codex/

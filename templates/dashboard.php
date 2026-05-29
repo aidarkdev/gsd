@@ -55,6 +55,7 @@ $jsonFlags = JSON_UNESCAPED_SLASHES
             <nav class="sidebar-nav" aria-label="<?= htmlspecialchars($t('nav.primary'), ENT_QUOTES, 'UTF-8') ?>">
                 <a href="/"><?= htmlspecialchars($t('nav.home'), ENT_QUOTES, 'UTF-8') ?></a>
                 <a href="/dashboard"><?= htmlspecialchars($t('nav.dashboard'), ENT_QUOTES, 'UTF-8') ?></a>
+                <a href="/calendar"><?= htmlspecialchars($t('nav.calendar'), ENT_QUOTES, 'UTF-8') ?></a>
                 <?php if ($user['role'] === 'admin'): ?>
                     <a href="/admin/users"><?= htmlspecialchars($t('nav.users'), ENT_QUOTES, 'UTF-8') ?></a>
                 <?php endif; ?>

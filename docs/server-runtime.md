@@ -143,6 +143,7 @@ Application exceptions are handled by `src/Http/ErrorHandler.php` through Slim e
 Persistent runtime files and state:
 
 - `.env`
+- `storage/attachments`
 - `storage/logs`
 - `storage/sessions`
 - PostgreSQL data

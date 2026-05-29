@@ -45,6 +45,18 @@ $dashboardResponse = (new AccessPolicyMiddleware($services->auth, $services->tra
 assertStatus($dashboardResponse, 302, 'GET /dashboard without session redirects');
 assertHeader($dashboardResponse, 'Location', '/login', 'Unauthenticated web redirect target');
 
+$calendarResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
+    $requestFactory->createServerRequest('GET', '/calendar'),
+    handler(200)
+);
+assertStatus($calendarResponse, 302, 'GET /calendar without session redirects');
+
+$attachmentResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
+    $requestFactory->createServerRequest('GET', '/attachments/1'),
+    handler(200)
+);
+assertStatus($attachmentResponse, 302, 'GET /attachments/1 without session redirects');
+
 $headersResponse = (new SecurityHeadersMiddleware())(
     $requestFactory->createServerRequest('GET', '/'),
     handler(200)

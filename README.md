@@ -8,15 +8,17 @@ Install these on Ubuntu 24.04:
 
 ```sh
 sudo apt update
-sudo apt install nginx php8.3-fpm php8.3-pgsql postgresql rsync
+sudo apt install nginx php8.3-fpm php8.3-pgsql postgresql rsync composer
 ```
+
+Fedora: `sudo dnf install nginx php-fpm php-pgsql postgresql-server rsync composer php-cli`
 
 ## PHP dependencies
 
-This project uses a local Composer binary:
+`composer.phar` is not in git. Install the OS `composer` package (see above), then from the repo root:
 
 ```sh
-php composer.phar install
+composer install
 ```
 
 ## PostgreSQL

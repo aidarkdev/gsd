@@ -68,4 +68,4 @@ Do not introduce a browser dependency manager unless a feature has a concrete ne
 
 Deployments must include Composer-installed runtime code or run `composer install` on the target host according to the chosen deploy process.
 
-Do not deploy local-only caches or unrelated development artifacts. Do preserve `.env`, `storage/logs`, `storage/sessions`, and PostgreSQL data.
+Do not deploy local-only caches or unrelated development artifacts. Do preserve `.env`, `storage/attachments`, `storage/logs`, `storage/sessions`, and PostgreSQL data.

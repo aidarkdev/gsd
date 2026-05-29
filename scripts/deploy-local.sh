@@ -20,6 +20,7 @@ sudo rsync -a --delete \
     --exclude '/.codex/' \
     --exclude '/composer.phar' \
     --exclude '/composer-setup.php' \
+    --exclude '/storage/attachments/***' \
     --exclude '/storage/logs/***' \
     --exclude '/storage/sessions/***' \
     --exclude '/*.log' \
@@ -33,9 +34,10 @@ if [ ! -f "$DEST_DIR/.env" ]; then
     fi
 fi
 
-sudo find "$DEST_DIR" \( -path "$DEST_DIR/storage/logs" -o -path "$DEST_DIR/storage/sessions" \) -prune -o -type d -exec chmod 0755 {} +
-sudo find "$DEST_DIR" \( -path "$DEST_DIR/storage/logs" -o -path "$DEST_DIR/storage/sessions" \) -prune -o -type f ! -name '.env' -exec chmod 0644 {} +
+sudo find "$DEST_DIR" \( -path "$DEST_DIR/storage/attachments" -o -path "$DEST_DIR/storage/logs" -o -path "$DEST_DIR/storage/sessions" \) -prune -o -type d -exec chmod 0755 {} +
+sudo find "$DEST_DIR" \( -path "$DEST_DIR/storage/attachments" -o -path "$DEST_DIR/storage/logs" -o -path "$DEST_DIR/storage/sessions" \) -prune -o -type f ! -name '.env' -exec chmod 0644 {} +
 sudo chmod 0640 "$DEST_DIR/.env"
+sudo install -d -m 0775 -o "$DEPLOY_OWNER" -g "$PHP_GROUP" "$DEST_DIR/storage/attachments"
 sudo install -d -m 0775 -o "$DEPLOY_OWNER" -g "$PHP_GROUP" "$DEST_DIR/storage/logs"
 sudo install -d -m 0775 -o "$DEPLOY_OWNER" -g "$PHP_GROUP" "$DEST_DIR/storage/sessions"
 

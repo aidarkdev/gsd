@@ -21,6 +21,7 @@ Runtime source and configuration:
 Persistent files and directories:
 
 - `.env`
+- `storage/attachments`
 - `storage/logs`
 - `storage/sessions`
 - PostgreSQL data
@@ -38,7 +39,7 @@ The script:
 - excludes `.env`, `.git`, local agent folders, Composer installer files, and logs;
 - creates `.env` on first deploy from the local `.env` or `.env.example`;
 - sets readable source permissions;
-- creates writable `storage/logs` and `storage/sessions`.
+- creates writable `storage/attachments`, `storage/logs`, and `storage/sessions`.
 
 Use a custom destination by passing it as the first argument:
 
@@ -113,10 +114,10 @@ PHP code changes usually require updating deployed files. Reload nginx only when
 
 The application requires Composer dependencies from `composer.json` and `composer.lock`.
 
-For a fresh checkout or target host:
+For a fresh checkout or target host, install the OS `composer` package, then:
 
 ```sh
-php composer.phar install
+composer install
 ```
 
 Production deploys should use the locked dependency set from `composer.lock`.

@@ -45,11 +45,62 @@ $dashboardResponse = (new AccessPolicyMiddleware($services->auth, $services->tra
 assertStatus($dashboardResponse, 302, 'GET /dashboard without session redirects');
 assertHeader($dashboardResponse, 'Location', '/login', 'Unauthenticated web redirect target');
 
+$inboxResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
+    $requestFactory->createServerRequest('GET', '/inbox'),
+    handler(200)
+);
+assertStatus($inboxResponse, 302, 'GET /inbox without session redirects');
+
+$inboxApiResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
+    $requestFactory->createServerRequest('GET', '/api/inbox-tasks'),
+    handler(200)
+);
+assertStatus($inboxApiResponse, 401, 'GET /api/inbox-tasks without session returns 401');
+assertHeader($inboxApiResponse, 'Content-Type', 'application/json', 'Unauthenticated inbox API response is JSON');
+
+$habitsResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
+    $requestFactory->createServerRequest('GET', '/habits'),
+    handler(200)
+);
+assertStatus($habitsResponse, 302, 'GET /habits without session redirects');
+
+$habitsApiResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
+    $requestFactory->createServerRequest('GET', '/api/habits'),
+    handler(200)
+);
+assertStatus($habitsApiResponse, 401, 'GET /api/habits without session returns 401');
+assertHeader($habitsApiResponse, 'Content-Type', 'application/json', 'Unauthenticated habits API response is JSON');
+
+$inboxCsrfResponse = (new CsrfMiddleware($services->csrf, $services->logger, $services->translator))(
+    $requestFactory->createServerRequest('POST', '/api/inbox-tasks')->withParsedBody([]),
+    handler(200)
+);
+assertStatus($inboxCsrfResponse, 419, 'POST /api/inbox-tasks without CSRF returns 419');
+
 $calendarResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
     $requestFactory->createServerRequest('GET', '/calendar'),
     handler(200)
 );
 assertStatus($calendarResponse, 302, 'GET /calendar without session redirects');
+
+$dayDataResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
+    $requestFactory->createServerRequest('GET', '/api/day-data'),
+    handler(200)
+);
+assertStatus($dayDataResponse, 401, 'GET /api/day-data without session returns 401');
+assertHeader($dayDataResponse, 'Content-Type', 'application/json', 'Unauthenticated API day data response is JSON');
+
+$habitCsrfResponse = (new CsrfMiddleware($services->csrf, $services->logger, $services->translator))(
+    $requestFactory->createServerRequest('POST', '/api/habits')->withParsedBody([]),
+    handler(200)
+);
+assertStatus($habitCsrfResponse, 419, 'POST /api/habits without CSRF returns 419');
+
+$habitResumeCsrfResponse = (new CsrfMiddleware($services->csrf, $services->logger, $services->translator))(
+    $requestFactory->createServerRequest('POST', '/api/habits/1/resume')->withParsedBody([]),
+    handler(200)
+);
+assertStatus($habitResumeCsrfResponse, 419, 'POST /api/habits/{id}/resume without CSRF returns 419');
 
 $attachmentResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
     $requestFactory->createServerRequest('GET', '/attachments/1'),

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Auth;
 
-use App\Middleware\SessionMiddleware;
 use App\Repository\UserRepository;
 
 final class AuthService
@@ -32,7 +31,7 @@ final class AuthService
         $_SESSION = [];
 
         if (session_status() === PHP_SESSION_ACTIVE) {
-            SessionMiddleware::deleteCookie();
+            $this->deleteSessionCookie();
             session_destroy();
         }
     }
@@ -58,5 +57,19 @@ final class AuthService
         $user = $this->user();
 
         return $user !== null && $user['role'] === $role;
+    }
+
+    private function deleteSessionCookie(): void
+    {
+        $params = session_get_cookie_params();
+
+        setcookie(session_name(), '', [
+            'expires' => time() - 42000,
+            'path' => $params['path'],
+            'domain' => $params['domain'],
+            'secure' => (bool) $params['secure'],
+            'httponly' => (bool) $params['httponly'],
+            'samesite' => $params['samesite'] ?? 'Lax',
+        ]);
     }
 }

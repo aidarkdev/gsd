@@ -11,9 +11,9 @@ use App\Http\ErrorHandler;
 use App\I18n\Translator;
 use App\Log\FileLogger;
 use App\Repository\AttachmentRepository;
+use App\Repository\HabitRepository;
 use App\Repository\LoginAttemptRepository;
 use App\Repository\NoteRepository;
-use App\Repository\TagRepository;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Validation\Validator;
@@ -30,7 +30,7 @@ final class AppServices
         public readonly LoginAttemptRepository $loginAttempts,
         public readonly TaskRepository $tasks,
         public readonly NoteRepository $notes,
-        public readonly TagRepository $tags,
+        public readonly HabitRepository $habits,
         public readonly AttachmentRepository $attachments,
         public readonly AuthService $auth,
         public readonly Translator $translator,

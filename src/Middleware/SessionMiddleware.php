@@ -16,20 +16,6 @@ final class SessionMiddleware
     ) {
     }
 
-    public static function deleteCookie(): void
-    {
-        $params = session_get_cookie_params();
-
-        setcookie(session_name(), '', [
-            'expires' => time() - 42000,
-            'path' => $params['path'],
-            'domain' => $params['domain'],
-            'secure' => (bool) $params['secure'],
-            'httponly' => (bool) $params['httponly'],
-            'samesite' => $params['samesite'] ?? 'Lax',
-        ]);
-    }
-
     public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {

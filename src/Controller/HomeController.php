@@ -33,8 +33,6 @@ final class HomeController
 
         $lang = $this->translator->currentLanguage();
         $response->getBody()->write($this->templates->render('home.php', [
-            'app' => 'gsd',
-            'environment' => $_ENV['APP_ENV'] ?? 'local',
             'user' => $user,
             'csrfToken' => $this->csrf->get(),
             'lang' => $lang,

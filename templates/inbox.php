@@ -12,7 +12,7 @@ $jsonFlags = JSON_UNESCAPED_SLASHES
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
-    <title><?= htmlspecialchars($t('dashboard.title'), ENT_QUOTES, 'UTF-8') ?></title>
+    <title><?= htmlspecialchars($t('inbox.title'), ENT_QUOTES, 'UTF-8') ?></title>
     <link rel="stylesheet" href="/static/app.css">
     <script src="/static/app.js" defer></script>
     <script type="module" src="/engine/bootstrap.js"></script>
@@ -24,11 +24,10 @@ $jsonFlags = JSON_UNESCAPED_SLASHES
         <script type="application/json" id="__BAKED__"><?= json_encode($partsBaked, $jsonFlags) ?></script>
         <script type="application/json" id="__MOUNTS__"><?= json_encode($partsMounts, $jsonFlags) ?></script>
 
-        <main class="app-main">
-            <h1><?= htmlspecialchars($t('dashboard.heading'), ENT_QUOTES, 'UTF-8') ?></h1>
-
-            <div data-mount-id="dashboard-summary">
-                <p><?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars($user['role'], ENT_QUOTES, 'UTF-8') ?></p>
+        <main class="app-main inbox-main">
+            <div data-mount-id="inbox-tasks">
+                <h1><?= htmlspecialchars($t('inbox.heading'), ENT_QUOTES, 'UTF-8') ?></h1>
+                <p class="calendar-empty"><?= htmlspecialchars($t('inbox.loading'), ENT_QUOTES, 'UTF-8') ?></p>
             </div>
         </main>
 

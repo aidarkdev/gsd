@@ -8,6 +8,7 @@ use App\Auth\AuthService;
 use App\Auth\CsrfToken;
 use App\I18n\Translator;
 use App\Repository\AttachmentRepository;
+use App\Repository\HabitRepository;
 use App\Repository\NoteRepository;
 use App\Repository\TaskRepository;
 use App\View\TemplateRenderer;
@@ -17,8 +18,8 @@ use Psr\Http\Message\ServerRequestInterface;
 
 final class CalendarController
 {
-    private const WEEKS_BEFORE = 4;
-    private const WEEKS_AFTER = 8;
+    private const WEEKS_BEFORE = 2;
+    private const WEEKS_AFTER = 3;
 
     public function __construct(
         private TemplateRenderer $templates,
@@ -27,6 +28,7 @@ final class CalendarController
         private Translator $translator,
         private TaskRepository $tasks,
         private NoteRepository $notes,
+        private HabitRepository $habits,
         private AttachmentRepository $attachments
     ) {
     }
@@ -44,6 +46,7 @@ final class CalendarController
         $lang = $this->translator->currentLanguage();
         $query = $request->getQueryParams();
         $selectedWeekStart = $this->weekStart((string) ($query['start'] ?? ''));
+        $weeksPerPage = self::WEEKS_BEFORE + self::WEEKS_AFTER + 1;
         $visibleStart = $selectedWeekStart->modify('-' . self::WEEKS_BEFORE . ' weeks');
         $visibleEnd = $selectedWeekStart->modify('+' . self::WEEKS_AFTER . ' weeks')->modify('+6 days');
         $rangeStartDate = $visibleStart->format('Y-m-d');
@@ -51,6 +54,12 @@ final class CalendarController
 
         $rawTasks = $this->tasks->findInstancesForRange((int) $user['id'], $rangeStartDate, $rangeEndDate);
         $rawNotes = $this->notes->findDayNotesForRange((int) $user['id'], $rangeStartDate, $rangeEndDate);
+        $rawHabits = $this->habits->findRulesForRange((int) $user['id'], $rangeStartDate, $rangeEndDate);
+        $rawEntries = $this->habits->findEntriesForRangeWithSlidingLookback(
+            (int) $user['id'],
+            $rangeStartDate,
+            $rangeEndDate
+        );
         $taskAttachments = $this->groupByNullableId(
             $this->attachments->findForTasks((int) $user['id'], array_column($rawTasks, 'id')),
             'task_id'
@@ -60,9 +69,7 @@ final class CalendarController
             'note_id'
         );
 
-        $days = $this->emptyDays($visibleStart, $visibleEnd, $lang);
-        $this->addNotes($days, $rawNotes, $noteAttachments);
-        $this->addTasks($days, $rawTasks, $taskAttachments, $visibleStart, $visibleEnd);
+        $weeks = $this->weeksFromDays($this->emptyDays($visibleStart, $visibleEnd, $lang), $visibleStart, $visibleEnd);
 
         $response->getBody()->write($this->templates->render('calendar.php', [
             'user' => $user,
@@ -71,12 +78,39 @@ final class CalendarController
             'languageAction' => '/lang/' . $this->translator->oppositeLanguage($lang),
             'languageLabel' => $this->translator->translate($lang, 'language.switch_to'),
             't' => fn (string $key): string => $this->translator->translate($lang, $key),
-            'weeks' => $this->weeksFromDays($days, $visibleStart, $visibleEnd, $lang),
             'rangeLabel' => $this->formatMonthDay($visibleStart, $lang)
                 . ' - '
                 . $this->formatMonthDay($visibleEnd, $lang),
-            'previousUrl' => '/calendar?start=' . $selectedWeekStart->modify('-13 weeks')->format('Y-m-d'),
-            'nextUrl' => '/calendar?start=' . $selectedWeekStart->modify('+13 weeks')->format('Y-m-d'),
+            'previousUrl' => '/calendar?start=' . $selectedWeekStart->modify('-' . $weeksPerPage . ' weeks')->format('Y-m-d'),
+            'nextUrl' => '/calendar?start=' . $selectedWeekStart->modify('+' . $weeksPerPage . ' weeks')->format('Y-m-d'),
+            'partsBaked' => [
+                'calendar-workspace' => [
+                    'range' => [
+                        'from' => $rangeStartDate,
+                        'to' => $rangeEndDate,
+                        'label' => $this->formatMonthDay($visibleStart, $lang)
+                            . ' - '
+                            . $this->formatMonthDay($visibleEnd, $lang),
+                        'previousUrl' => '/calendar?start=' . $selectedWeekStart->modify('-' . $weeksPerPage . ' weeks')->format('Y-m-d'),
+                        'nextUrl' => '/calendar?start=' . $selectedWeekStart->modify('+' . $weeksPerPage . ' weeks')->format('Y-m-d'),
+                    ],
+                    'today' => (new DateTimeImmutable('today'))->format('Y-m-d'),
+                    'weeks' => $weeks,
+                    'tasks' => $this->normalizeTasks($rawTasks, $taskAttachments),
+                    'notes' => $this->normalizeNotes($rawNotes, $noteAttachments),
+                    'habits' => $this->normalizeRows($rawHabits),
+                    'entries' => $this->normalizeRows($rawEntries),
+                    'strings' => $this->calendarStrings($lang),
+                ],
+            ],
+            'partsMounts' => [
+                'instances' => [
+                    [
+                        'id' => 'calendar-workspace',
+                        'part' => '/parts/calendar-workspace/index.js',
+                    ],
+                ],
+            ],
         ]));
 
         return $response->withHeader('Content-Type', 'text/html; charset=utf-8');
@@ -116,68 +150,13 @@ final class CalendarController
                 'monthClass' => 'calendar-month-' . $monthNumber,
                 'isToday' => $isoDate === $today,
                 'isWeekend' => $weekdayNumber >= 6,
-                'tasks' => [],
-                'note' => null,
             ];
         }
 
         return $days;
     }
 
-    private function addNotes(array &$days, array $notes, array $attachmentsByNote): void
-    {
-        foreach ($notes as $note) {
-            $noteDate = (string) $note['note_date'];
-
-            if (!isset($days[$noteDate])) {
-                continue;
-            }
-
-            $days[$noteDate]['note'] = [
-                'id' => (int) $note['id'],
-                'title' => $note['title'],
-                'preview' => $this->preview((string) ($note['title'] ?? ''), (string) $note['body_md']),
-                'attachments' => $attachmentsByNote[(int) $note['id']] ?? [],
-            ];
-        }
-    }
-
-    private function addTasks(
-        array &$days,
-        array $tasks,
-        array $attachmentsByTask,
-        DateTimeImmutable $visibleStart,
-        DateTimeImmutable $visibleEnd
-    ): void {
-        foreach ($tasks as $task) {
-            $taskStart = new DateTimeImmutable((string) $task['start_date']);
-            $taskEnd = new DateTimeImmutable((string) $task['end_date']);
-            $start = $taskStart < $visibleStart ? $visibleStart : $taskStart;
-            $end = $taskEnd > $visibleEnd ? $visibleEnd : $taskEnd;
-
-            for ($date = $start; $date <= $end; $date = $date->modify('+1 day')) {
-                $isoDate = $date->format('Y-m-d');
-
-                if (!isset($days[$isoDate])) {
-                    continue;
-                }
-
-                $days[$isoDate]['tasks'][] = [
-                    'id' => (int) $task['id'],
-                    'title' => $task['title'],
-                    'preview' => $this->preview('', (string) $task['body_md']),
-                    'status' => $task['status'],
-                    'isRecurring' => $task['series_id'] !== null,
-                    'isLong' => (string) $task['start_date'] !== (string) $task['end_date'],
-                    'isStart' => $isoDate === (string) $task['start_date'],
-                    'isEnd' => $isoDate === (string) $task['end_date'],
-                    'attachments' => $attachmentsByTask[(int) $task['id']] ?? [],
-                ];
-            }
-        }
-    }
-
-    private function weeksFromDays(array $days, DateTimeImmutable $start, DateTimeImmutable $end, string $lang): array
+    private function weeksFromDays(array $days, DateTimeImmutable $start, DateTimeImmutable $end): array
     {
         $weeks = [];
 
@@ -189,9 +168,7 @@ final class CalendarController
             }
 
             $weeks[] = [
-                'label' => $this->formatMonthDay($weekStart, $lang)
-                    . ' - '
-                    . $this->formatMonthDay($weekStart->modify('+6 days'), $lang),
+                'number' => $weekStart->format('W'),
                 'days' => $weekDays,
             ];
         }
@@ -212,6 +189,111 @@ final class CalendarController
         }
 
         return $grouped;
+    }
+
+    private function normalizeTasks(array $tasks, array $attachmentsByTask): array
+    {
+        return array_map(function (array $task) use ($attachmentsByTask): array {
+            return [
+                'id' => (int) $task['id'],
+                'parent_task_id' => $task['parent_task_id'] === null ? null : (int) $task['parent_task_id'],
+                'title' => (string) $task['title'],
+                'body_md' => (string) $task['body_md'],
+                'start_date' => (string) $task['start_date'],
+                'end_date' => (string) $task['end_date'],
+                'status' => (string) $task['status'],
+                'attachments' => $this->normalizeRows($attachmentsByTask[(int) $task['id']] ?? []),
+            ];
+        }, $tasks);
+    }
+
+    private function normalizeNotes(array $notes, array $attachmentsByNote): array
+    {
+        return array_map(function (array $note) use ($attachmentsByNote): array {
+            return [
+                'id' => (int) $note['id'],
+                'note_date' => (string) $note['note_date'],
+                'title' => $note['title'] === null ? null : (string) $note['title'],
+                'body_md' => (string) $note['body_md'],
+                'attachments' => $this->normalizeRows($attachmentsByNote[(int) $note['id']] ?? []),
+            ];
+        }, $notes);
+    }
+
+    private function normalizeRows(array $rows): array
+    {
+        return array_map(static function (array $row): array {
+            foreach ($row as $key => $value) {
+                if (is_bool($value) || $value === null) {
+                    continue;
+                }
+
+                if (is_numeric($value) && in_array($key, [
+                    'id',
+                    'user_id',
+                    'habit_id',
+                    'frequency_days',
+                    'task_id',
+                    'note_id',
+                    'size_bytes',
+                ], true)) {
+                    $row[$key] = (int) $value;
+                }
+            }
+
+            return $row;
+        }, $rows);
+    }
+
+    private function calendarStrings(string $lang): array
+    {
+        $keys = [
+            'calendar.previous',
+            'calendar.heading',
+            'calendar.controls',
+            'calendar.today',
+            'calendar.next',
+            'calendar.empty_day',
+            'calendar.day_note',
+            'calendar.marker.long',
+            'calendar.attachment.photo',
+            'calendar.attachment.audio',
+            'calendar.status.ongoing',
+            'calendar.status.done',
+            'calendar.status.will_do',
+            'calendar.status.stale',
+            'calendar.week_number',
+            'calendar.workspace.tasks',
+            'calendar.workspace.habits',
+            'calendar.workspace.note',
+            'calendar.workspace.add_task',
+            'calendar.workspace.save_task',
+            'calendar.workspace.delete_task',
+            'calendar.workspace.add_habit',
+            'calendar.workspace.save_habit',
+            'calendar.workspace.archive_habit',
+            'calendar.workspace.save_note',
+            'calendar.workspace.done',
+            'calendar.workspace.skipped',
+            'calendar.workspace.clear',
+            'calendar.workspace.close',
+            'calendar.workspace.title',
+            'calendar.workspace.details',
+            'calendar.workspace.frequency',
+            'calendar.workspace.mode',
+            'calendar.workspace.strict',
+            'calendar.workspace.sliding',
+            'calendar.workspace.start_date',
+            'calendar.workspace.no_habits',
+            'calendar.workspace.loading',
+        ];
+        $strings = [];
+
+        foreach ($keys as $key) {
+            $strings[$key] = $this->translator->translate($lang, $key);
+        }
+
+        return $strings;
     }
 
     private function preview(string $title, string $bodyMd): string

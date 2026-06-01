@@ -6,7 +6,7 @@ GSD should keep runtime dependencies small and explicit.
 
 Current runtime dependencies:
 
-- PHP 8.3.
+- PHP 8.3 or newer (distribution default via `php-fpm`; 8.3 on Ubuntu 24.04, 8.5 on Ubuntu 26.04).
 - Slim 4 and Slim PSR-7 through Composer.
 - PDO with the PostgreSQL driver.
 - PostgreSQL.

@@ -2,34 +2,40 @@
 
 Minimal PHP REST API with Slim, PHP-FPM, Nginx, and PostgreSQL.
 
-## Ubuntu packages
+## Local setup (Ubuntu)
 
-Install these on Ubuntu 24.04:
-
-```sh
-sudo apt update
-sudo apt install nginx php8.3-fpm php8.3-pgsql postgresql rsync composer
-```
-
-Fedora: `sudo dnf install nginx php-fpm php-pgsql postgresql-server rsync composer php-cli`
-
-## PHP dependencies
-
-`composer.phar` is not in git. Install the OS `composer` package (see above), then from the repo root:
+From the repo root:
 
 ```sh
-composer install
+bash scripts/setup-local.sh
 ```
 
-## PostgreSQL
+The script installs system packages when needed, creates `.env` on first run, runs Composer, sets up PostgreSQL, deploys to `/var/www/gsd`, configures nginx and `/etc/hosts`, then verifies HTTP before it finishes.
 
-Create the local database, schema, and first admin user:
+Open **http://127.0.0.1/login** (or **http://gsd.local/login**). Sign-in uses `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.env`.
+
+Re-run after code changes:
 
 ```sh
-bash scripts/setup-db.sh
+bash scripts/deploy-local.sh
 ```
 
-The setup script reads `.env`, creates the PostgreSQL role/database, applies `database/schema.sql`, and ensures the admin user from `ADMIN_EMAIL`/`ADMIN_PASSWORD`. `ADMIN_PASSWORD` is required and cannot use the example value.
+For local development only, make the deploy directory writable once if `sudo` is unavailable during deploy:
+
+```sh
+sudo install -d -m 0755 -o "$USER" -g "$USER" /var/www/gsd
+sudo install -d -m 0775 -o "$USER" -g www-data /var/www/gsd/storage/attachments /var/www/gsd/storage/logs /var/www/gsd/storage/sessions
+```
+
+For VPS deployment, see `docs/deploy.md`; do not use local-dev ownership rules for production.
+
+Reload nginx only after nginx config changes:
+
+```sh
+sudo systemctl reload nginx
+```
+
+Fedora (manual): `sudo dnf install nginx php-fpm php-pgsql postgresql-server rsync composer php-cli`, then run the same scripts except `setup-local.sh` apt steps.
 
 ## Security Defaults
 
@@ -46,40 +52,6 @@ For HTTPS production use:
 ```env
 APP_COOKIE_SECURE=true
 APP_DEBUG=false
-```
-
-## Nginx
-
-Deploy the current source tree to `/var/www/gsd`:
-
-```sh
-bash scripts/deploy-local.sh
-```
-
-The deploy command syncs source files and keeps `/var/www/gsd/.env` separate after the first deploy.
-
-Copy `config/nginx/gsd.conf` to `/etc/nginx/sites-available/gsd`, enable it, then reload Nginx:
-
-```sh
-sudo cp config/nginx/gsd.conf /etc/nginx/sites-available/gsd
-sudo ln -s /etc/nginx/sites-available/gsd /etc/nginx/sites-enabled/gsd
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-For local DNS, add this to `/etc/hosts`:
-
-```text
-127.0.0.1 gsd.local
-```
-
-## Checks
-
-```sh
-curl http://gsd.local/
-curl http://gsd.local/api/health
-curl http://gsd.local/api/missing
-curl http://gsd.local/static/app.css
 ```
 
 ## Local Test

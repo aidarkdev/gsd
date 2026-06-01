@@ -18,7 +18,7 @@ final class HealthController
     public function show(ServerRequestInterface $_request, ResponseInterface $response): ResponseInterface
     {
         try {
-            $this->database->connect()->query('SELECT 1');
+            $this->database->ping();
 
             return $this->json($response, [
                 'status' => 'ok',

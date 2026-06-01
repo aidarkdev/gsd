@@ -63,4 +63,23 @@ final class NoteRepository
 
         return $statement->fetchAll();
     }
+
+    public function upsertDayNote(int $userId, string $noteDate, string $bodyMd, ?string $title = null): array
+    {
+        $statement = $this->database->connect()->prepare(
+            'INSERT INTO notes (user_id, note_type, note_date, title, body_md)
+             VALUES (:user_id, \'day\', :note_date, :title, :body_md)
+             ON CONFLICT (user_id, note_date) WHERE note_type = \'day\'
+             DO UPDATE SET title = EXCLUDED.title, body_md = EXCLUDED.body_md
+             RETURNING id, user_id, note_type, note_date, title, body_md, created_at, updated_at'
+        );
+        $statement->execute([
+            'user_id' => $userId,
+            'note_date' => $noteDate,
+            'title' => $title,
+            'body_md' => $bodyMd,
+        ]);
+
+        return $statement->fetch();
+    }
 }

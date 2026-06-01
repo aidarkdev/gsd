@@ -35,4 +35,9 @@ final class Database
 
         return $this->pdo;
     }
+
+    public function ping(): void
+    {
+        $this->connect()->query('SELECT 1');
+    }
 }

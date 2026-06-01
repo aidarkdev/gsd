@@ -11,9 +11,9 @@ use App\Http\ErrorHandler;
 use App\I18n\Translator;
 use App\Log\FileLogger;
 use App\Repository\AttachmentRepository;
+use App\Repository\HabitRepository;
 use App\Repository\LoginAttemptRepository;
 use App\Repository\NoteRepository;
-use App\Repository\TagRepository;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Validation\Validator;
@@ -48,6 +48,12 @@ final class Bootstrap
                 continue;
             }
 
+            $existingValue = getenv($key);
+
+            if ((isset($_ENV[$key]) && $_ENV[$key] !== '') || ($existingValue !== false && $existingValue !== '')) {
+                continue;
+            }
+
             if (
                 strlen($value) >= 2
                 && (($value[0] === '"' && $value[strlen($value) - 1] === '"')
@@ -74,7 +80,7 @@ final class Bootstrap
         $loginAttempts = new LoginAttemptRepository($database);
         $tasks = new TaskRepository($database);
         $notes = new NoteRepository($database);
-        $tags = new TagRepository($database);
+        $habits = new HabitRepository($database);
         $attachments = new AttachmentRepository($database);
         $auth = new AuthService($users);
         $translator = new Translator($_ENV['APP_DEFAULT_LANG'] ?? 'en');
@@ -89,7 +95,7 @@ final class Bootstrap
             loginAttempts: $loginAttempts,
             tasks: $tasks,
             notes: $notes,
-            tags: $tags,
+            habits: $habits,
             attachments: $attachments,
             auth: $auth,
             translator: $translator,

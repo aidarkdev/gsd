@@ -53,6 +53,7 @@ final class CalendarController
         $rangeEndDate = $visibleEnd->format('Y-m-d');
 
         $rawTasks = $this->tasks->findInstancesForRange((int) $user['id'], $rangeStartDate, $rangeEndDate);
+        $rawInboxTasks = $this->tasks->findInboxTasks((int) $user['id']);
         $rawNotes = $this->notes->findDayNotesForRange((int) $user['id'], $rangeStartDate, $rangeEndDate);
         $rawHabits = $this->habits->findRulesForRange((int) $user['id'], $rangeStartDate, $rangeEndDate);
         $rawEntries = $this->habits->findEntriesForRangeWithSlidingLookback(
@@ -97,6 +98,7 @@ final class CalendarController
                     'today' => (new DateTimeImmutable('today'))->format('Y-m-d'),
                     'weeks' => $weeks,
                     'tasks' => $this->normalizeTasks($rawTasks, $taskAttachments),
+                    'inboxTasks' => $this->normalizeInboxTasks($rawInboxTasks),
                     'notes' => $this->normalizeNotes($rawNotes, $noteAttachments),
                     'habits' => $this->normalizeRows($rawHabits),
                     'entries' => $this->normalizeRows($rawEntries),
@@ -207,6 +209,19 @@ final class CalendarController
         }, $tasks);
     }
 
+    private function normalizeInboxTasks(array $tasks): array
+    {
+        return array_map(static fn (array $task): array => [
+            'id' => (int) $task['id'],
+            'parent_task_id' => $task['parent_task_id'] === null ? null : (int) $task['parent_task_id'],
+            'title' => (string) $task['title'],
+            'body_md' => (string) $task['body_md'],
+            'status' => (string) $task['status'],
+            'created_at' => (string) $task['created_at'],
+            'updated_at' => (string) $task['updated_at'],
+        ], $tasks);
+    }
+
     private function normalizeNotes(array $notes, array $attachmentsByNote): array
     {
         return array_map(function (array $note) use ($attachmentsByNote): array {
@@ -267,12 +282,19 @@ final class CalendarController
             'calendar.workspace.habits',
             'calendar.workspace.note',
             'calendar.workspace.add_task',
+            'calendar.workspace.add_task_spoiler',
             'calendar.workspace.save_task',
             'calendar.workspace.delete_task',
             'calendar.workspace.add_habit',
+            'calendar.workspace.add_habit_spoiler',
             'calendar.workspace.save_habit',
             'calendar.workspace.archive_habit',
             'calendar.workspace.save_note',
+            'calendar.workspace.inbox',
+            'calendar.workspace.schedule_to_day',
+            'calendar.workspace.scheduled',
+            'calendar.workspace.no_inbox_tasks',
+            'calendar.workspace.state_scheduled',
             'calendar.workspace.done',
             'calendar.workspace.skipped',
             'calendar.workspace.clear',

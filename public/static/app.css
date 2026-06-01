@@ -915,10 +915,22 @@ td {
 
 .calendar-drawer-list,
 .calendar-form,
-.calendar-drawer-item {
+.calendar-drawer-item,
+.calendar-spoiler {
     display: grid;
     gap: 0.55rem;
     min-width: 0;
+}
+
+.calendar-spoiler {
+    border-top: 1px solid var(--border);
+    padding-top: 0.7rem;
+}
+
+.calendar-spoiler summary {
+    cursor: pointer;
+    font-weight: 800;
+    list-style-position: inside;
 }
 
 .calendar-drawer-item {
@@ -941,6 +953,35 @@ td {
 
 .calendar-row-actions button {
     min-height: 2.25rem;
+}
+
+.calendar-segmented {
+    align-items: stretch;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    min-width: 0;
+    overflow: hidden;
+}
+
+.calendar-segmented button {
+    background: var(--surface);
+    border: 0;
+    border-radius: 0;
+    color: var(--text);
+    min-height: 2.25rem;
+    padding: 0.35rem 0.45rem;
+}
+
+.calendar-segmented button + button {
+    border-left: 1px solid var(--border);
+}
+
+.calendar-segmented button.is-active {
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 800;
 }
 
 .calendar-form-row > label {

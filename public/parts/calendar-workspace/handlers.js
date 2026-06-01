@@ -38,6 +38,10 @@ function applyData(part, payload) {
             id: Number(task.id),
             attachments: taskAttachments.get(Number(task.id)) ?? task.attachments ?? [],
         })),
+        inboxTasks: (data.inboxTasks ?? part.state.inboxTasks ?? []).map((task) => ({
+            ...task,
+            id: Number(task.id),
+        })),
         notes: (data.notes ?? []).map((note) => ({
             ...note,
             id: Number(note.id),
@@ -98,6 +102,32 @@ export default {
                     dayPanelOpen: true,
                     editingTaskId: null,
                     editingHabitId: null,
+                });
+            }
+        },
+
+        'click [data-action="schedule-inbox-to-day"]': async (part, event) => {
+            const node = event.target.closest('[data-task-id]');
+            const id = Number(node?.dataset.taskId ?? 0);
+            const date = node?.dataset.date ?? part.state.selectedDate ?? part.state.today;
+            const previousInboxTasks = part.state.inboxTasks ?? [];
+            const previousTasks = part.state.tasks ?? [];
+
+            try {
+                const data = await postJsonOk(`/api/inbox-tasks/${id}/schedule`, {
+                    start_date: date,
+                    end_date: date,
+                });
+                refresh(part, {
+                    inboxTasks: previousInboxTasks.filter((task) => Number(task.id) !== id),
+                    tasks: replaceById(previousTasks, { ...data.task, attachments: [] }),
+                    message: part.state.strings?.['calendar.workspace.scheduled'] ?? 'Scheduled',
+                });
+            } catch (error) {
+                refresh(part, {
+                    inboxTasks: previousInboxTasks,
+                    tasks: previousTasks,
+                    error: error.message,
                 });
             }
         },
@@ -192,6 +222,47 @@ export default {
 
             try {
                 const data = await postJsonOk('/api/habit-entries', payload);
+                refresh(part, { entries: replaceHabitEntry(part.state.entries ?? [], data.entry) });
+            } catch (error) {
+                refresh(part, { entries: previous, error: error.message });
+            }
+        },
+
+        'click [data-action="habit-entry-state"]': async (part, event) => {
+            const node = event.target.closest('[data-habit-id]');
+            const status = node?.dataset.status ?? '';
+            const payload = {
+                habit_id: Number(node?.dataset.habitId ?? 0),
+                performed_date: node?.dataset.date ?? '',
+            };
+            const previous = part.state.entries ?? [];
+            const existing = previous.find((entry) => Number(entry.habit_id) === payload.habit_id && entry.performed_date === payload.performed_date);
+
+            if (status === 'scheduled') {
+                if (!existing) {
+                    return;
+                }
+
+                refresh(part, {
+                    entries: previous.filter((entry) => !(Number(entry.habit_id) === payload.habit_id && entry.performed_date === payload.performed_date)),
+                });
+
+                try {
+                    await postJsonOk('/api/habit-entries/delete', payload);
+                } catch (error) {
+                    refresh(part, { entries: previous, error: error.message });
+                }
+
+                return;
+            }
+
+            const entryPayload = { ...payload, status };
+            const optimistic = replaceHabitEntry(previous, entryPayload);
+
+            refresh(part, { entries: optimistic });
+
+            try {
+                const data = await postJsonOk('/api/habit-entries', entryPayload);
                 refresh(part, { entries: replaceHabitEntry(part.state.entries ?? [], data.entry) });
             } catch (error) {
                 refresh(part, { entries: previous, error: error.message });

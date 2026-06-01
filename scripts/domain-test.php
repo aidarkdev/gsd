@@ -166,6 +166,8 @@ try {
     assertBodyContains($calendarResponse, 'Hydrate', 'calendar baked state includes task title');
     assertBodyContains($calendarResponse, 'Day note', 'calendar baked state includes day note');
     assertBodyContains($calendarResponse, 'Meditate', 'calendar baked state includes habits');
+    assertBodyContains($calendarResponse, '"inboxTasks"', 'calendar baked JSON contains inbox tasks key');
+    assertBodyContains($calendarResponse, 'Inbox idea', 'calendar baked state includes inbox task');
     assertBodyNotContains($calendarResponse, 'Apr 27 - May 3', 'calendar page omits per-week date range heading');
     assertBodyNotContains($calendarResponse, '<h2 id="calendar-week-', 'calendar page omits per-week heading');
     assertBodyContains($calendarResponse, '"habits"', 'calendar baked JSON contains habits key');
@@ -179,6 +181,41 @@ try {
         BASE_PATH . '/public/parts/calendar-workspace/template.js',
         'slidePanel',
         'calendar workspace template uses shared slide panel'
+    );
+    assertFileContains(
+        BASE_PATH . '/public/parts/calendar-workspace/template.js',
+        'calendar-spoiler',
+        'calendar workspace template hides day forms behind spoilers'
+    );
+    assertFileContains(
+        BASE_PATH . '/public/parts/calendar-workspace/template.js',
+        'habit-entry-state',
+        'calendar workspace template uses three-state habit controls'
+    );
+    assertFileContains(
+        BASE_PATH . '/public/parts/calendar-workspace/template.js',
+        "habitStateButton(state, slot, 'scheduled')",
+        'calendar workspace habit control includes scheduled state'
+    );
+    assertFileContains(
+        BASE_PATH . '/public/parts/calendar-workspace/template.js',
+        "habitStateButton(state, slot, 'done')",
+        'calendar workspace habit control includes done state'
+    );
+    assertFileContains(
+        BASE_PATH . '/public/parts/calendar-workspace/template.js',
+        "habitStateButton(state, slot, 'skipped')",
+        'calendar workspace habit control includes skipped state'
+    );
+    assertFileContains(
+        BASE_PATH . '/public/parts/calendar-workspace/template.js',
+        'schedule-inbox-to-day',
+        'calendar workspace template includes inbox scheduling action'
+    );
+    assertFileContains(
+        BASE_PATH . '/public/parts/calendar-workspace/handlers.js',
+        'schedule-inbox-to-day',
+        'calendar workspace handlers schedule inbox tasks to selected day'
     );
     assertFileContains(
         BASE_PATH . '/public/parts/shared/slide-panel.js',
@@ -242,6 +279,7 @@ try {
     );
     assertStatus($dayDataResponse, 200, 'day data API renders for authenticated user');
     assertBodyContains($dayDataResponse, '2026-04-28', 'day data API includes sliding lookback entry');
+    assertBodyContains($dayDataResponse, '"inboxTasks"', 'day data API includes inbox tasks key');
 
     $habitsApiResponse = $apiController->habits(
         $requestFactory->createServerRequest('GET', '/api/habits'),

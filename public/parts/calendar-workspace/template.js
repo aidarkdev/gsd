@@ -125,18 +125,36 @@ function dayWorkspaceContent(day, state, date) {
             <section class="calendar-panel">
                 <h3>${escape(state.strings?.['calendar.workspace.tasks'] ?? 'Tasks')}</h3>
                 ${taskList(day.tasks, state)}
-                ${taskForm(state, date)}
+                ${spoiler(
+                    state.strings?.['calendar.workspace.add_task_spoiler'] ?? 'Add or edit task',
+                    taskForm(state, date),
+                    Boolean(state.editingTaskId)
+                )}
+                ${inboxSpoiler(state, date)}
             </section>
             <section class="calendar-panel">
                 <h3>${escape(state.strings?.['calendar.workspace.habits'] ?? 'Habits')}</h3>
                 ${habitList(day.habitSlots, state)}
-                ${habitForm(state, date)}
+                ${spoiler(
+                    state.strings?.['calendar.workspace.add_habit_spoiler'] ?? 'Add or edit habit',
+                    habitForm(state, date),
+                    Boolean(state.editingHabitId)
+                )}
             </section>
             <section class="calendar-panel">
                 <h3>${escape(state.strings?.['calendar.workspace.note'] ?? 'Note')}</h3>
                 ${noteForm(day.note, state, date)}
             </section>
         </section>
+    `;
+}
+
+function spoiler(label, content, open = false) {
+    return `
+        <details class="calendar-spoiler"${open ? ' open' : ''}>
+            <summary>${escape(label)}</summary>
+            ${content}
+        </details>
     `;
 }
 
@@ -215,16 +233,65 @@ function habitList(slots, state) {
                         <strong>${escape(slot.habit.name)}</strong>
                         <p>${escape(slot.status)}${slot.early ? ' · early' : ''}</p>
                     </div>
+                    <div class="calendar-segmented" role="group" aria-label="${escape(slot.habit.name)}">
+                        ${habitStateButton(state, slot, 'scheduled')}
+                        ${habitStateButton(state, slot, 'done')}
+                        ${habitStateButton(state, slot, 'skipped')}
+                    </div>
                     <div class="calendar-row-actions">
-                        <button type="button" data-action="habit-entry" data-habit-id="${escape(slot.habit.id)}" data-date="${escape(slot.date)}" data-status="done">${escape(state.strings?.['calendar.workspace.done'] ?? 'Done')}</button>
-                        <button type="button" data-action="habit-entry" data-habit-id="${escape(slot.habit.id)}" data-date="${escape(slot.date)}" data-status="skipped">${escape(state.strings?.['calendar.workspace.skipped'] ?? 'Skipped')}</button>
-                        ${slot.entry ? `<button type="button" data-action="habit-entry-clear" data-habit-id="${escape(slot.habit.id)}" data-date="${escape(slot.entry.performed_date)}">${escape(state.strings?.['calendar.workspace.clear'] ?? 'Clear')}</button>` : ''}
                         <button type="button" data-action="edit-habit" data-habit-id="${escape(slot.habit.id)}">${escape(state.strings?.['calendar.workspace.save_habit'] ?? 'Edit')}</button>
                     </div>
                 </article>
             `).join('')}
         </div>
     `;
+}
+
+function habitStateButton(state, slot, status) {
+    const activeStatus = slot.entry?.status ?? 'scheduled';
+    const labels = {
+        scheduled: state.strings?.['calendar.workspace.state_scheduled'] ?? 'Scheduled',
+        done: state.strings?.['calendar.workspace.done'] ?? 'Done',
+        skipped: state.strings?.['calendar.workspace.skipped'] ?? 'Skipped',
+    };
+
+    return `
+        <button
+            type="button"
+            class="${activeStatus === status ? 'is-active' : ''}"
+            data-action="habit-entry-state"
+            data-habit-id="${escape(slot.habit.id)}"
+            data-date="${escape(slot.entry?.performed_date ?? slot.date)}"
+            data-status="${escape(status)}"
+            aria-pressed="${activeStatus === status ? 'true' : 'false'}"
+        >${escape(labels[status])}</button>
+    `;
+}
+
+function inboxSpoiler(state, date) {
+    const tasks = state.inboxTasks ?? [];
+
+    return spoiler(
+        state.strings?.['calendar.workspace.inbox'] ?? 'Inbox',
+        tasks.length === 0
+            ? `<p class="calendar-empty">${escape(state.strings?.['calendar.workspace.no_inbox_tasks'] ?? 'No inbox tasks')}</p>`
+            : `
+                <div class="calendar-drawer-list">
+                    ${tasks.map((task) => `
+                        <article class="calendar-drawer-item">
+                            <div>
+                                <strong>${escape(task.title)}</strong>
+                                ${task.body_md ? `<p>${escape(task.body_md)}</p>` : ''}
+                                <p>${escape(state.strings?.[`calendar.status.${task.status}`] ?? task.status)}</p>
+                            </div>
+                            <div class="calendar-row-actions">
+                                <button type="button" data-action="schedule-inbox-to-day" data-task-id="${escape(task.id)}" data-date="${escape(date)}">${escape(state.strings?.['calendar.workspace.schedule_to_day'] ?? 'To this day')}</button>
+                            </div>
+                        </article>
+                    `).join('')}
+                </div>
+            `
+    );
 }
 
 function habitForm(state, date) {

@@ -272,6 +272,7 @@ final class CalendarApiController
 
         return [
             'tasks' => $tasks,
+            'inboxTasks' => $this->tasks->findInboxTasks($userId),
             'notes' => $notes,
             'habits' => $habits,
             'entries' => $entries,

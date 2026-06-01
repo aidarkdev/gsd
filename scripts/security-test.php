@@ -37,14 +37,6 @@ $apiCsrfResponse = (new CsrfMiddleware($services->csrf, $services->logger, $serv
 assertStatus($apiCsrfResponse, 419, 'POST /api/missing without CSRF returns 419');
 assertHeader($apiCsrfResponse, 'Content-Type', 'application/json', 'API CSRF response is JSON');
 
-$_SESSION = [];
-$dashboardResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
-    $requestFactory->createServerRequest('GET', '/dashboard'),
-    handler(200)
-);
-assertStatus($dashboardResponse, 302, 'GET /dashboard without session redirects');
-assertHeader($dashboardResponse, 'Location', '/login', 'Unauthenticated web redirect target');
-
 $inboxResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
     $requestFactory->createServerRequest('GET', '/inbox'),
     handler(200)
@@ -127,10 +119,10 @@ try {
     $_SESSION = ['user_id' => (int) $user['id']];
 
     $adminResponse = (new AccessPolicyMiddleware($services->auth, $services->translator))(
-        $requestFactory->createServerRequest('GET', '/admin/users'),
+        $requestFactory->createServerRequest('GET', '/admin/probe'),
         handler(200)
     );
-    assertStatus($adminResponse, 403, 'Admin page with user role returns 403');
+    assertStatus($adminResponse, 403, 'Admin namespace with user role returns 403');
 
     $_SESSION = [];
     $rateLimit = new LoginRateLimitMiddleware($services->loginAttempts, 5, 900, 900, $services->translator);

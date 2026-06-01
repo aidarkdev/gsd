@@ -52,7 +52,7 @@ A PHP template that mounts parts emits:
 `__MOUNTS__` contains an `instances` array. Each instance has:
 
 - `id`: required, unique on the page;
-- `part`: required browser module URL, for example `/parts/dashboard-summary/index.js`;
+- `part`: required browser module URL, for example `/parts/calendar-workspace/index.js`;
 - `microState`: optional fallback if no baked state exists;
 - `expose`: optional list of local state fields published to MacroState;
 - `subscribe`: optional map of local field name to MacroState path.
@@ -127,11 +127,11 @@ Use MacroState only when independent parts need to coordinate. Otherwise keep da
 - `escape(value)` does not validate URL schemes.
 - No inline executable scripts are required; current CSP can keep same-origin external modules.
 
-## Current Demo
+## Current Parts
 
-`/dashboard` mounts `dashboard-summary` as a minimal proof:
+The primary browser-part pages are `/calendar`, `/inbox`, and `/habits`:
 
-- PHP prepares baked state from the authenticated user.
-- `bootstrap.js` imports `/parts/dashboard-summary/index.js`.
-- The part renders name, role, and a local click counter.
-- The logout form remains an ordinary CSRF-protected PHP form.
+- PHP prepares baked state from authenticated repositories.
+- `bootstrap.js` imports the page-specific module under `/parts/*/index.js`.
+- Parts render bounded interactive regions and call authenticated JSON APIs with CSRF.
+- Header, sidebar, language switching, and logout remain ordinary PHP-rendered controls.

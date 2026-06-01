@@ -24,8 +24,8 @@ nginx owns direct public file delivery under the configured document root:
 
 Slim owns application routes after the request reaches `public/index.php`:
 
-- HTML pages such as `/`, `/login`, `/dashboard`, and `/admin/users`.
-- API routes such as `/api/health`, `/api/me`, and `/api/admin/users`.
+- HTML pages such as `/login`, `/inbox`, `/habits`, and `/calendar`.
+- API routes such as `/api/health`, `/api/inbox-tasks`, `/api/day-data`, and `/api/habits`.
 - Fallback 404 handling for unknown routes.
 
 nginx must not expose arbitrary PHP files. The current nginx config returns `404` for `location ~ \.php$` except the exact `/index.php` location.

@@ -15,35 +15,24 @@ final class Translator
         'en' => [
             'app.name' => 'GSD',
 
-            'nav.home' => 'Home',
             'nav.login' => 'Login',
-            'nav.dashboard' => 'Dashboard',
             'nav.inbox' => 'Inbox',
             'nav.habits' => 'Habits',
             'nav.calendar' => 'Calendar',
-            'nav.users' => 'Users',
             'nav.logout' => 'Logout',
             'nav.primary' => 'Primary navigation',
             'nav.toggle' => 'Toggle navigation',
 
             'language.switch_to' => 'RU',
 
-            'home.title' => 'GSD',
-            'home.status' => 'Minimal PHP app is running.',
-
             'auth.login.title' => 'Login · GSD',
             'auth.login.heading' => 'Sign in',
-            'auth.login.subtitle' => 'Access your workspace dashboard.',
+            'auth.login.subtitle' => 'Access your workspace.',
             'auth.login.failed' => 'Sign-in failed',
             'auth.field.email' => 'Email',
             'auth.field.password' => 'Password',
             'auth.submit.sign_in' => 'Sign in',
             'auth.error.invalid' => 'Email or password is incorrect.',
-
-            'dashboard.title' => 'Dashboard · GSD',
-            'dashboard.heading' => 'Dashboard',
-            'dashboard.client_clicks' => 'Client clicks',
-            'dashboard.count' => 'Count',
 
             'inbox.title' => 'Inbox · GSD',
             'inbox.heading' => 'Inbox',
@@ -149,14 +138,6 @@ final class Translator
             'calendar.month.11' => 'Nov',
             'calendar.month.12' => 'Dec',
 
-            'admin.users.title' => 'Users · GSD',
-            'admin.users.heading' => 'Users',
-            'admin.users.col.id' => 'ID',
-            'admin.users.col.email' => 'Email',
-            'admin.users.col.name' => 'Name',
-            'admin.users.col.role' => 'Role',
-            'admin.users.col.created' => 'Created',
-
             'validation.required' => 'Required',
             'validation.email' => 'Invalid email',
             'validation.too_short' => 'Too short',
@@ -170,35 +151,24 @@ final class Translator
         'ru' => [
             'app.name' => 'GSD',
 
-            'nav.home' => 'Главная',
             'nav.login' => 'Войти',
-            'nav.dashboard' => 'Панель',
             'nav.inbox' => 'Инбокс',
             'nav.habits' => 'Привычки',
             'nav.calendar' => 'Календарь',
-            'nav.users' => 'Пользователи',
             'nav.logout' => 'Выйти',
             'nav.primary' => 'Основная навигация',
             'nav.toggle' => 'Переключить навигацию',
 
             'language.switch_to' => 'EN',
 
-            'home.title' => 'GSD',
-            'home.status' => 'Минимальное PHP-приложение работает.',
-
             'auth.login.title' => 'Войти · GSD',
             'auth.login.heading' => 'Войти',
-            'auth.login.subtitle' => 'Доступ к рабочей панели.',
+            'auth.login.subtitle' => 'Доступ к рабочей области.',
             'auth.login.failed' => 'Вход не выполнен',
             'auth.field.email' => 'Email',
             'auth.field.password' => 'Пароль',
             'auth.submit.sign_in' => 'Войти',
             'auth.error.invalid' => 'Email или пароль указаны неверно.',
-
-            'dashboard.title' => 'Панель · GSD',
-            'dashboard.heading' => 'Панель',
-            'dashboard.client_clicks' => 'Клики клиента',
-            'dashboard.count' => 'Считать',
 
             'inbox.title' => 'Инбокс · GSD',
             'inbox.heading' => 'Инбокс',
@@ -303,14 +273,6 @@ final class Translator
             'calendar.month.10' => 'Окт',
             'calendar.month.11' => 'Ноя',
             'calendar.month.12' => 'Дек',
-
-            'admin.users.title' => 'Пользователи · GSD',
-            'admin.users.heading' => 'Пользователи',
-            'admin.users.col.id' => 'ID',
-            'admin.users.col.email' => 'Email',
-            'admin.users.col.name' => 'Имя',
-            'admin.users.col.role' => 'Роль',
-            'admin.users.col.created' => 'Создан',
 
             'validation.required' => 'Обязательное поле',
             'validation.email' => 'Некорректный email',

@@ -77,7 +77,7 @@ Support utilities live outside the HTTP path unless called by controllers or mid
 
 The primary frontend is server-rendered PHP templates in `templates/`.
 
-- `templates/home.php`, `templates/auth/login.php`, `templates/dashboard.php`, and `templates/admin/users.php` render complete HTML pages.
+- `templates/auth/login.php`, `templates/inbox.php`, `templates/habits.php`, and `templates/calendar.php` render complete HTML pages.
 - Dynamic text is escaped with `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')`.
 - Unsafe forms include `_csrf`.
 - Templates may hide links based on role for presentation, but backend middleware remains authoritative.

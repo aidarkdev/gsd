@@ -168,6 +168,11 @@ try {
     assertBodyContains($calendarResponse, 'Meditate', 'calendar baked state includes habits');
     assertBodyContains($calendarResponse, '"inboxTasks"', 'calendar baked JSON contains inbox tasks key');
     assertBodyContains($calendarResponse, 'Inbox idea', 'calendar baked state includes inbox task');
+    assertBodyContains($calendarResponse, '/inbox', 'calendar sidebar contains inbox link');
+    assertBodyContains($calendarResponse, '/habits', 'calendar sidebar contains habits link');
+    assertBodyContains($calendarResponse, '/calendar', 'calendar sidebar contains calendar link');
+    assertBodyNotContains($calendarResponse, '/dashboard', 'calendar sidebar omits dashboard link');
+    assertBodyNotContains($calendarResponse, '/admin/users', 'calendar sidebar omits admin users link');
     assertBodyNotContains($calendarResponse, 'Apr 27 - May 3', 'calendar page omits per-week date range heading');
     assertBodyNotContains($calendarResponse, '<h2 id="calendar-week-', 'calendar page omits per-week heading');
     assertBodyContains($calendarResponse, '"habits"', 'calendar baked JSON contains habits key');

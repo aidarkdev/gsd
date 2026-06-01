@@ -53,7 +53,7 @@ final class AuthController
         }
 
         return $response
-            ->withHeader('Location', '/dashboard')
+            ->withHeader('Location', '/calendar')
             ->withStatus(302);
     }
 
@@ -74,7 +74,7 @@ final class AuthController
         $this->auth->logout();
 
         return $response
-            ->withHeader('Location', '/')
+            ->withHeader('Location', '/login')
             ->withStatus(302);
     }
 
@@ -96,7 +96,7 @@ final class AuthController
 
     private function redirectBackPath(ServerRequestInterface $request): string
     {
-        $fallback = $this->auth->check() ? '/dashboard' : '/login';
+        $fallback = $this->auth->check() ? '/calendar' : '/login';
         $referer = $request->getHeaderLine('Referer');
 
         if ($referer === '') {

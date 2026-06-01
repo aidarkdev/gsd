@@ -8,7 +8,7 @@ This guide describes how to build UI in GSD without turning it into a separate f
 
 Build operational screens, not marketing pages.
 
-- Prefer dense, readable layouts for repeated work: navigation, forms, tables, lists, admin pages, dashboards, and bounded widgets.
+- Prefer dense, readable layouts for repeated work: navigation, forms, tables, lists, workspace pages, and bounded widgets.
 - Keep visual style restrained: clear hierarchy, stable spacing, legible type, obvious actions, and predictable navigation.
 - Do not add a landing-page hero, decorative illustrations, gradient backgrounds, or animation-heavy UI unless the product requirement specifically asks for that.
 - Use plain server-rendered pages for static pages, simple forms, simple tables, login, and ordinary CRUD screens.
@@ -38,10 +38,10 @@ Use a small set of stable layout primitives before inventing new page shapes.
 
 - `.main` or equivalent page container should define max width, horizontal centering, and page padding.
 - Use sticky top navigation only when repeated page work benefits from persistent controls.
-- For admin and dashboard pages, prefer a topbar with a compact title and immediate actions.
+- For operational workspace pages, prefer a topbar with a compact title and immediate actions.
 - For large lists, prefer explicit pagination over infinite scroll.
 - For side navigation or filters, use a sidebar that is fixed/off-canvas on small screens and persistent only when the viewport has enough width.
-- Use tables for dense admin data. Wrap wide tables in a scroll container instead of squeezing columns into unreadable cards.
+- Use tables for dense data. Wrap wide tables in a scroll container instead of squeezing columns into unreadable cards.
 - Use cards for repeated visual items where image/title/actions matter; do not use cards as generic page sections.
 
 CSS should define reusable tokens when a value appears as a layout contract:

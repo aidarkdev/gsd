@@ -3,15 +3,12 @@
 declare(strict_types=1);
 
 use App\App\AppServices;
-use App\Controller\AdminUserController;
 use App\Controller\AttachmentController;
 use App\Controller\AuthController;
 use App\Controller\CalendarApiController;
 use App\Controller\CalendarController;
-use App\Controller\DashboardController;
 use App\Controller\HabitController;
 use App\Controller\HealthController;
-use App\Controller\HomeController;
 use App\Controller\InboxApiController;
 use App\Controller\InboxController;
 use Psr\Http\Message\ResponseInterface;
@@ -19,19 +16,12 @@ use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
 
 return static function (App $app, AppServices $services): void {
-    $homeController = new HomeController($services->templates, $services->auth, $services->csrf, $services->translator);
     $authController = new AuthController(
         $services->templates,
         $services->auth,
         $services->csrf,
         $services->translator,
         $services->validator
-    );
-    $dashboardController = new DashboardController(
-        $services->templates,
-        $services->auth,
-        $services->csrf,
-        $services->translator
     );
     $inboxController = new InboxController(
         $services->templates,
@@ -67,28 +57,19 @@ return static function (App $app, AppServices $services): void {
     $inboxApiController = new InboxApiController($services->auth, $services->tasks);
     $attachmentController = new AttachmentController($services->attachments, $services->auth);
     $healthController = new HealthController($services->database);
-    $adminUserController = new AdminUserController(
-        $services->templates,
-        $services->users,
-        $services->auth,
-        $services->csrf,
-        $services->translator
-    );
-    $app->get('/', [$homeController, 'show']);
+    $app->get('/', static fn (ServerRequestInterface $_request, ResponseInterface $response): ResponseInterface => $response
+        ->withHeader('Location', '/calendar')
+        ->withStatus(302));
     $app->get('/login', [$authController, 'loginForm']);
     $app->post('/login', [$authController, 'login']);
     $app->post('/lang/{code}', [$authController, 'language']);
     $app->post('/logout', [$authController, 'logout']);
-    $app->get('/dashboard', [$dashboardController, 'show']);
     $app->get('/inbox', [$inboxController, 'show']);
     $app->get('/habits', [$habitController, 'show']);
     $app->get('/calendar', [$calendarController, 'show']);
     $app->get('/attachments/{id}', [$attachmentController, 'show']);
-    $app->get('/admin/users', [$adminUserController, 'index']);
 
     $app->get('/api/health', [$healthController, 'show']);
-    $app->get('/api/me', [$adminUserController, 'me']);
-    $app->get('/api/admin/users', [$adminUserController, 'apiIndex']);
     $app->get('/api/inbox-tasks', [$inboxApiController, 'index']);
     $app->post('/api/inbox-tasks', [$inboxApiController, 'create']);
     $app->post('/api/inbox-tasks/{id}', [$inboxApiController, 'update']);
